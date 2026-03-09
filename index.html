@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --pip-green: #14ff00;
+      --pip-dark: #051505;
+      --pip-alert: #ff2a00;
+    }
+    body {
+      background-color: var(--pip-dark);
+      color: var(--pip-green);
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 800px; margin: auto; }
+    h1 { border-bottom: 2px solid var(--pip-green); padding-bottom: 10px; text-transform: uppercase; }
+    .scanline {
+      width: 100%; height: 100px; z-index: 10; position: absolute; pointer-events: none;
+      background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(20,255,0,0.1) 50%, rgba(0,0,0,0) 100%);
+      animation: scanline 6s linear infinite;
+    }
+    @keyframes scanline { 0% { top: -100px; } 100% { top: 100%; } }
+    select, button, input[type="radio"] { cursor: pointer; }
+    select {
+      background: var(--pip-dark); color: var(--pip-green);
+      border: 1px solid var(--pip-green); padding: 5px; width: 100%; font-family: inherit; margin-bottom: 20px;
+    }
+    .question-block { margin-bottom: 20px; border: 1px dashed var(--pip-green); padding: 15px; }
+    .btn-submit {
+      background: var(--pip-green); color: var(--pip-dark);
+      border: none; padding: 15px; width: 100%; font-size: 1.2em; font-weight: bold; font-family: inherit;
+    }
+    .btn-submit:hover { background: #18cc04; }
+    #result-area { display: none; margin-top: 30px; border: 2px solid var(--pip-green); padding: 20px; background: rgba(20,255,0,0.05); }
+    .critical { color: var(--pip-alert); font-weight: bold; }
+    a { color: var(--pip-green); text-decoration: underline; }
+    a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+  <div class="container">
+    <h1>[SYSTEM_STATUS: ONLINE]<br>J-Wasteland 生存判定モジュール</h1>
+    <p>ユーザーの現在地および初期行動から、生存確率と最適な逃避ベクトルを算術する。</p>
+
+    <div id="form-area">
+      <label><b>[TARGET_NODE] 所在地を選択せよ：</b></label>
+      <select id="prefecture"><option>Loading Nodes...</option></select>
+
+      <div class="question-block">
+        <b>Q1: 閃光（フラッシュ）を確認した直後の行動は？</b><br>
+        <label><input type="radio" name="q1" value="underground"> 即座に地下、またはコンクリート建造物の中心へ退避</label><br>
+        <label><input type="radio" name="q1" value="outdoor"> 状況確認のため屋外へ出る、または窓に近づく</label>
+      </div>
+
+      <div class="question-block">
+        <b>Q2: 投下から6時間後、死の灰が降り始める中の行動は？</b><br>
+        <label><input type="radio" name="q2" value="vector"> 地形を読み、推奨されたベクトル（風上・岩盤）へ移動</label><br>
+        <label><input type="radio" name="q2" value="stay"> 最寄りの河川沿いを歩く、または風下へ逃げる</label>
+      </div>
+
+      <div class="question-block">
+        <b>Q3: 投下から24時間後の行動は？</b><br>
+        <label><input type="radio" name="q3" value="seal"> 隙間を目張りし、備蓄食料のみで空間を密閉維持</label><br>
+        <label><input type="radio" name="q3" value="scavenge"> 外部の物資（野外の水や食料）を探索・摂取</label>
+      </div>
+
+      <button class="btn-submit" onclick="executeAssessment()">[ EXECUTE_PROTOCOL ]</button>
+    </div>
+
+    <div id="result-area">
+      <h2>>> ANALYSIS_COMPLETE</h2>
+      <h1 id="res-rate" style="font-size: 2.5em; margin: 10px 0;"></h1>
+      <p id="res-log" style="font-size: 0.9em; border-left: 3px solid var(--pip-green); padding-left: 10px;"></p>
+      <hr style="border: 0; border-top: 1px dashed var(--pip-green);">
+      <p><b>[AREA]</b> <span id="res-pref"></span> (<span id="res-cap"></span>)</p>
+      <p><b>[DAMAGE_PROFILE]</b> <span id="res-dmg"></span></p>
+      <p><b>[SURVIVAL_VECTOR]</b> <span id="res-p-vec"></span></p>
+      <p class="critical"><b>[CRITICAL_HAZARD]</b> <span id="res-h-vec"></span></p>
+      <p class="critical"><b>[HYDRO_HAZARD]</b> <span id="res-hydro"></span></p>
+      <p><b>[FALLOUT_ZONE]</b> <span id="res-fallout"></span></p>
+      <hr style="border: 0; border-top: 1px solid var(--pip-green);">
+      <p>>> 詳細な戦術データはログアーカイブを参照せよ：<br>
+      <a id="res-link" href="#" target="_blank">[ OPEN_SURVIVAL_GUIDE ]</a></p>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      google.script.run.withSuccessHandler(function(list) {
+        const sel = document.getElementById('prefecture');
+        sel.innerHTML = list.map(p => `<option value="${p}">${p}</option>`).join('');
+      }).getPrefectureList();
+    };
+
+    function executeAssessment() {
+      const q1 = document.querySelector('input[name="q1"]:checked');
+      const q2 = document.querySelector('input[name="q2"]:checked');
+      const q3 = document.querySelector('input[name="q3"]:checked');
+
+      if(!q1 || !q2 || !q3) {
+        alert("ERROR: すべてのパラメーターを入力せよ。");
+        return;
+      }
+
+      document.querySelector('.btn-submit').innerText = "[ CALCULATING... ]";
+
+      const data = {
+        prefecture: document.getElementById('prefecture').value,
+        q1: q1.value, q2: q2.value, q3: q3.value
+      };
+
+      google.script.run.withSuccessHandler(function(res) {
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('form-area').style.display = 'none';
+
+        const rateEl = document.getElementById('res-rate');
+        rateEl.innerText = `推定生存率: ${res.rate}%`;
+        if(res.rate < 30) rateEl.style.color = 'var(--pip-alert)';
+
+        document.getElementById('res-log').innerHTML = res.tacticalLog;
+        document.getElementById('res-pref').innerText = res.pref;
+        document.getElementById('res-cap').innerText = res.capital;
+        document.getElementById('res-dmg').innerText = res.damage;
+        document.getElementById('res-p-vec').innerText = res.primaryVector;
+        document.getElementById('res-h-vec').innerText = res.hazardVector;
+        document.getElementById('res-hydro').innerText = res.hydroHazard;
+        document.getElementById('res-fallout').innerText = res.falloutZone;
+        document.getElementById('res-link').href = res.link;
+        
+        window.scrollTo(0, 0);
+      }).runSurvivalAssessment(data);
+    }
+  </script>
+</body>
+</html>

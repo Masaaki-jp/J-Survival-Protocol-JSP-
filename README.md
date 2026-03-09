@@ -1,4 +1,3 @@
-/🇯🇵 README.md (Japanese)
 # Protocol: J-WASTELAND (J-Wasteland 生存判定プロトコル)
 
 [![Google Apps Script](https://img.shields.io/badge/Google%20Apps%20Script-4285F4?style=flat-square&logo=google&logoColor=white)](https://script.google.com/macros/s/AKfycbyOwFhMb9oydI-KpiuUX6oH8lXVOkVs-GQtwRku8mMI/dev)

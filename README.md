@@ -92,7 +92,3 @@ Advocating for IT survival strategies and educational content using low-spec PCs
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-## 📄 License
-
-This project is licensed under the MIT License.

@@ -1,8 +1,8 @@
 /🇯🇵 README.md (Japanese)
 # Protocol: J-WASTELAND (J-Wasteland 生存判定プロトコル)
 
-[![Google Apps Script](https://img.shields.io/badge/Google%20Apps%20Script-4285F4?style=flat-square&logo=google&logoColor=white)](https://developers.google.com/apps-script)
-[![Google Sheets](https://img.shields.io/badge/Google%20Sheets-34A853?style=flat-square&logo=google-sheets&logoColor=white)](https://www.google.com/sheets/about/)
+[![Google Apps Script](https://img.shields.io/badge/Google%20Apps%20Script-4285F4?style=flat-square&logo=google&logoColor=white)](https://script.google.com/macros/s/AKfycbyOwFhMb9oydI-KpiuUX6oH8lXVOkVs-GQtwRku8mMI/dev)
+[![Google Sheets](https://img.shields.io/badge/Google%20Sheets-34A853?style=flat-square&logo=google-sheets&logoColor=white)](https://docs.google.com/spreadsheets/d/1gl3ddhv1KwqfxAu1NAZzR0ePDcOFstcI-xJL7MZDa0s/edit?usp=sharing)
 
 **「君の生存確率は何％だ？」**
 
